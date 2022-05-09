@@ -1,5 +1,7 @@
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
+const projectiles = [];
+const enemies = [];
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -82,9 +84,6 @@ const projectile = new Projectile(
   }
 );
 
-const projectiles = [];
-const enemies = [];
-
 function spawnEnemies() {
   setInterval(() => {
     const radius = Math.random() * (30 - 4) + 4;
@@ -121,10 +120,10 @@ let animateId;
 
 function animate() {
   animateId = requestAnimationFrame(animate);
-  c.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  c.fillStyle = "rgba(0, 0, 0, 0.1)";
   c.fillRect(0, 0, canvas.width, canvas.height);
   player.draw();
-  projectiles.forEach((projectile) => {
+  projectiles.forEach((projectile, projectileIndex) => {
     projectile.update();
 
     if (
@@ -134,8 +133,7 @@ function animate() {
       projectile.y - projectile.radius < canvas.width
     ) {
       setTimeout(() => {
-       
-        projectiles.splice(projectileIndex, 1);
+        projectiles.splice(projectileIndex, 1)
       }, 0);
     }
   });
@@ -155,11 +153,12 @@ function animate() {
       projectiles.forEach((projectile, projectileIndex) => {
         const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
         console.log(dist + " this is dist" + " projectile " + projectile);
-
+       
+        // when projectiles touch enemy 
         if (dist - enemy.radius - projectile.radius < 1) {
           setTimeout(() => {
             enemies.splice(index, 1);
-            projectiles.splice(projectileIndex, 1);
+            projectiles.splice(projectileIndex, 1)
           }, 0);
         }
       });
@@ -168,7 +167,6 @@ function animate() {
 }
 
 addEventListener("click", (e) => {
- 
   const angle = Math.atan2(
     e.clientY - canvas.height / 2,
     e.clientX - canvas.width / 2
@@ -179,7 +177,6 @@ addEventListener("click", (e) => {
     y: Math.sin(angle) * 5,
   };
 
-  
   projectiles.push(
     new Projectile(canvas.width / 2, canvas.height / 2, 5, "white", velocity)
   );
@@ -187,7 +184,5 @@ addEventListener("click", (e) => {
 
 animate();
 spawnEnemies();
-
-
 
 // could add a shop for upgrades, like a random shooter, time slower, shotgun mode
