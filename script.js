@@ -4,6 +4,8 @@ const c = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+const scoreEl = document.querySelector("#scoreEl");
+
 class Player {
   constructor(x, y, radius, color) {
     this.x = x;
@@ -88,8 +90,8 @@ class Particle {
 
   update() {
     this.draw();
-    this.velocity.x *= friction
-    this.velocity.y *= friction
+    this.velocity.x *= friction;
+    this.velocity.y *= friction;
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
     this.alpha -= 0.01;
@@ -130,10 +132,6 @@ function spawnEnemies() {
     }
 
     const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
-    // const velocity = {
-    //   x: 1,
-    //   y: 1,
-    // };
 
     const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
 
@@ -143,19 +141,17 @@ function spawnEnemies() {
     };
 
     enemies.push(new Enemy(x, y, radius, color, velocity));
-    
   }, 1000);
 }
 
 let animateId;
-
+let score = 0;
 function animate() {
   animateId = requestAnimationFrame(animate);
   c.fillStyle = "rgba(0, 0, 0, 0.1)";
   c.fillRect(0, 0, canvas.width, canvas.height);
   player.draw();
-  
-  
+
   particles.forEach((particle, index) => {
     if (particle.alpha <= 0) {
       particles.splice(index, 1);
@@ -163,10 +159,10 @@ function animate() {
       particle.update();
     }
   });
-  
+
   projectiles.forEach((projectile, index) => {
     projectile.update();
-  
+
     if (
       projectile.x + projectile.radius < 0 ||
       projectile.x - projectile.radius < canvas.width ||
@@ -174,7 +170,7 @@ function animate() {
       projectile.y - projectile.radius < canvas.width
     ) {
       setTimeout(() => {
-        projectiles.splice(index, 1);
+        projectiles.splice(index, 0);
       }, 0);
     }
   });
@@ -184,7 +180,6 @@ function animate() {
 
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
 
-    
     if (dist - enemy.radius - player.radius < 1) {
       console.log("end game");
       cancelAnimationFrame(animateId);
@@ -192,16 +187,26 @@ function animate() {
 
     projectiles.forEach((projectile, projectileIndex) => {
       const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
-      console.log(projectile + ' +  ' + projectileIndex);
 
       // when projectiles touch enemy
       if (dist - enemy.radius - projectile.radius < 1) {
+        //increase score
+        score += 100;
+        scoreEl.innerHTML = score;
+
+        //create explosions
         for (let i = 0; i < enemy.radius * 2; i++) {
           particles.push(
-            new Particle(projectile.x, projectile.y, Math.random() * 2, enemy.color, {
-              x: (Math.random() - 0.5) * (Math.random() * 8),
-              y: (Math.random() - 0.5) * (Math.random() * 8),
-            })
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 2,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * (Math.random() * 8),
+                y: (Math.random() - 0.5) * (Math.random() * 8),
+              }
+            )
           );
         }
         if (enemy.radius - 10 > 5) {
@@ -212,6 +217,10 @@ function animate() {
             projectiles.splice(projectileIndex, 1);
           }, 0);
         } else {
+          //remove from scene altogether
+          score += 250;
+          scoreEl.innerHTML = score;
+
           setTimeout(() => {
             enemies.splice(index, 1);
             projectiles.splice(projectileIndex, 1);
@@ -236,6 +245,7 @@ addEventListener("click", (e) => {
   projectiles.push(
     new Projectile(canvas.width / 2, canvas.height / 2, 5, "white", velocity)
   );
+  console.log(projectiles);
 });
 
 animate();
