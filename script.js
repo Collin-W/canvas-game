@@ -65,7 +65,7 @@ class Enemy {
     this.y = this.y + this.velocity.y;
   }
 }
-
+const friction = 0.99;
 class Particle {
   constructor(x, y, radius, color, velocity) {
     this.x = x;
@@ -88,6 +88,8 @@ class Particle {
 
   update() {
     this.draw();
+    this.velocity.x *= friction
+    this.velocity.y *= friction
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
     this.alpha -= 0.01;
@@ -152,16 +154,19 @@ function animate() {
   c.fillStyle = "rgba(0, 0, 0, 0.1)";
   c.fillRect(0, 0, canvas.width, canvas.height);
   player.draw();
-  projectiles.forEach((projectile) => {
+  
+  
+  particles.forEach((particle, index) => {
+    if (particle.alpha <= 0) {
+      particles.splice(index, 1);
+    } else {
+      particle.update();
+    }
+  });
+  
+  projectiles.forEach((projectile, index) => {
     projectile.update();
-    particles.forEach((particle) => {
-      if (particle.alpha <= 0) {
-        particles.splice(index, 1);
-      } else {
-        particle.update();
-      }
-    });
-
+  
     if (
       projectile.x + projectile.radius < 0 ||
       projectile.x - projectile.radius < canvas.width ||
@@ -179,7 +184,7 @@ function animate() {
 
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
 
-    // console.log(dist + "first this is dist");
+    
     if (dist - enemy.radius - player.radius < 1) {
       console.log("end game");
       cancelAnimationFrame(animateId);
@@ -187,15 +192,15 @@ function animate() {
 
     projectiles.forEach((projectile, projectileIndex) => {
       const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
-      console.log(dist + " this is dist" + " projectile " + projectile);
+      console.log(projectile + ' +  ' + projectileIndex);
 
       // when projectiles touch enemy
       if (dist - enemy.radius - projectile.radius < 1) {
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < enemy.radius * 2; i++) {
           particles.push(
-            new Particle(projectile.x, projectile.y, 3, enemy.color, {
-              x: Math.random() - 0.5,
-              y: Math.random() - 0.5,
+            new Particle(projectile.x, projectile.y, Math.random() * 2, enemy.color, {
+              x: (Math.random() - 0.5) * (Math.random() * 8),
+              y: (Math.random() - 0.5) * (Math.random() * 8),
             })
           );
         }
