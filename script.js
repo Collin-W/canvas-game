@@ -5,6 +5,9 @@ canvas.width = innerWidth;
 canvas.height = innerHeight;
 
 const scoreEl = document.querySelector("#scoreEl");
+const startGameBtn = document.querySelector("#startGameBtn");
+const modalEl = document.querySelector("#modalEl");
+const finalScoreEl = document.querySelector("#finalScoreEl");
 
 class Player {
   constructor(x, y, radius, color) {
@@ -101,10 +104,20 @@ class Particle {
 const x = canvas.width / 2;
 const y = canvas.height / 2;
 
-const player = new Player(x, y, 10, "white");
-const projectiles = [];
-const enemies = [];
-const particles = [];
+let player = new Player(x, y, 10, "white");
+let projectiles = [];
+let enemies = [];
+let particles = [];
+
+function init() {
+  player = new Player(x, y, 10, "white");
+  projectiles = [];
+  enemies = [];
+  particles = [];
+  score = 0;
+  scoreEl.innerHTML = score;
+  finalScoreEl.innerHTML = score;
+}
 
 const projectile = new Projectile(
   canvas.width / 2,
@@ -169,6 +182,7 @@ function animate() {
       projectile.y + projectile.radius < 0 ||
       projectile.y - projectile.radius < canvas.width
     ) {
+      //these lines of code can cause bugs, my projectile array does not clear without not animating the projectile
       setTimeout(() => {
         projectiles.splice(index, 0);
       }, 0);
@@ -183,6 +197,8 @@ function animate() {
     if (dist - enemy.radius - player.radius < 1) {
       console.log("end game");
       cancelAnimationFrame(animateId);
+      modalEl.style.display = "flex";
+      finalScoreEl.innerHTML = score;
     }
 
     projectiles.forEach((projectile, projectileIndex) => {
@@ -209,6 +225,8 @@ function animate() {
             )
           );
         }
+
+        //shrinks enemy size on hit
         if (enemy.radius - 10 > 5) {
           gsap.to(enemy, {
             radius: enemy.radius - 10,
@@ -217,6 +235,7 @@ function animate() {
             projectiles.splice(projectileIndex, 1);
           }, 0);
         } else {
+
           //remove from scene altogether
           score += 250;
           scoreEl.innerHTML = score;
@@ -231,6 +250,7 @@ function animate() {
   });
 }
 
+//listens for a user click and fires a projectile in that direction
 addEventListener("click", (e) => {
   const angle = Math.atan2(
     e.clientY - canvas.height / 2,
@@ -248,7 +268,12 @@ addEventListener("click", (e) => {
   console.log(projectiles);
 });
 
-animate();
-spawnEnemies();
+//a listener for the modal
+startGameBtn.addEventListener("click", () => {
+  init();
+  animate();
+  spawnEnemies();
+  modalEl.style.display = "none";
+});
 
 // could add a shop for upgrades, like a random shooter, time slower, shotgun mode
