@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
 //create a new player
 router.post("/", async (req, res) => {
     const player = new Player({
-      name: req.body.name,
+      username: req.body. username,
       highScore: req.body.highScore
     });
     try {
